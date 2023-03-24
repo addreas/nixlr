@@ -1,0 +1,2 @@
+#!/bin/sh
+deno run --allow-all $(dirname $0)/../main.ts
