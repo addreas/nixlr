@@ -1,5 +1,5 @@
 import {parse} from "https://deno.land/std/flags/mod.ts"
-import { discovery } from "./discover.ts"
+import { discovery } from "./discovery/mod.ts"
 import { firstboot } from "./firstboot.ts"
 import { provision } from "./provision.ts"
 
