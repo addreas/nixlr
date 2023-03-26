@@ -1,11 +1,9 @@
-{ lib, stdenvNoCC, pkgs, ... }:
-stdenvNoCC.mkDerivation rec {
+{ buildGoModule, lib, pkgs, ... }:
+buildGoModule rec {
   pname = "nixlr";
   version = "0.0.0";
 
   src = ./.;
 
-  dontBuild = true;
-  dontConfigure = true;
-  dontInstall = true;
+  vendorHash = "sha256-NQnVyUYC/2/JfLyp1fVz9Xg/aT2aXBzpuHOzm7j3lBM=";
 }
