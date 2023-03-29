@@ -20,7 +20,7 @@ var (
 func main() {
 	pflag.Parse()
 
-	registry := noderegistry.NewMockRegistry()
+	registry := noderegistry.NewMemoryRegistry()
 
 	router := gin.New()
 	router.Use(gin.Logger())

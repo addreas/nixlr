@@ -8,12 +8,6 @@ import (
 	"github.com/addreas/nixlr/packages/nixlr/pkg/noderegistry"
 )
 
-var (
-	toplevelDrv = "/nix/store/..." // for nixosSystem.config.system.build.toplevel
-	kernelDrv   = "/nix/store/..." // for nixosSystem.config.system.build.kernel
-	initrdDrv   = "/nix/store/..." // for nixosSystem.config.system.build.netbootRamdisk
-)
-
 func MountPaths(router *gin.RouterGroup, nixlrApi string, reg noderegistry.Registry) {
 	// https://github.com/danderson/netboot/blob/main/pixiecore/README.api.md
 	router.GET("/v1/boot/:mac", func(c *gin.Context) {
@@ -23,11 +17,13 @@ func MountPaths(router *gin.RouterGroup, nixlrApi string, reg noderegistry.Regis
 			return
 		}
 
+		paths := reg.GetNetbootNixStorePaths(mac)
+
 		c.JSON(200, gin.H{
-			"kernel": fmt.Sprintf("file:///%s/bzImage", kernelDrv),
-			"initrd": []string{fmt.Sprintf("file:///%s/initrd", initrdDrv)},
+			"kernel": fmt.Sprintf("file:///%s/bzImage", paths.Kernel),
+			"initrd": []string{fmt.Sprintf("file:///%s/initrd", paths.Initrd)},
 			"cmdline": []string{
-				fmt.Sprintf("init=%s/init", toplevelDrv),
+				fmt.Sprintf("init=%s/init", paths.TopLevel),
 				fmt.Sprintf("nixlr-api=%s", nixlrApi),
 				fmt.Sprintf("mac=%s", mac),
 			},
