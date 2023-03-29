@@ -22,7 +22,9 @@ func main() {
 
 	registry := noderegistry.NewMockRegistry()
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 	router.SetTrustedProxies(nil)
 
 	nodeGroup := router.Group("/node")
