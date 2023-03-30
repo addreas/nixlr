@@ -3,8 +3,8 @@ let
   lockfile = lib.importJSON ./deno.lock;
   deptodep = url: sha256: {
     inherit url;
-    name = "./" + (lib.strings.remotePrefix "https://" url);
-    path = fetchurl { inherit url sha256 };
+    name = "./" + (lib.strings.removePrefix "https://" url);
+    path = fetchurl { inherit url sha256; };
   };
   dependencies = lib.attrsets.mapAttrsToList deptodep lockfile.remote;
   import-map = pkgs.writeFile "import-map.json" (builtins.toJSON {

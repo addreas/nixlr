@@ -7,8 +7,7 @@ if (import.meta.main) await main()
 
 async function main() {
   const args = parse(Deno.args, {
-    boolean: ["discover", "provision", "firstboot"],
-    string: ["api", "mac"]
+    string: ["api", "mac", "mode"]
   })
 
   if (!args.api || !args.mac) {
@@ -18,12 +17,11 @@ async function main() {
 
   console.log(args)
 
-  if(args.discover) {
+  if(args.mode == "ephemeral") {
     console.log("discovering")
     await discovery(args.api, args.mac)
-  } else if (args.provision) {
     await provision(args.api, args.mac)
-  } else if (args.firstboot) {
+  } else if (args.mode == "firstboot") {
     await firstboot(args.api, args.mac)
   }
 }

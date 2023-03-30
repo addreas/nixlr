@@ -4,6 +4,12 @@ type DiscoveryInfo struct{}
 type ProvisionInfo struct{}
 type InstallStatus struct{}
 
+type NetbootNixStorePaths struct {
+	TopLevel string
+	Kernel   string
+	Initrd   string
+}
+
 type Registry interface {
 	// Pixie api
 	ShouldBoot(mac string) bool
@@ -22,10 +28,4 @@ type Registry interface {
 	GetDiscovery() []DiscoveryInfo
 	PutProvisionInfo(name string, info ProvisionInfo) error
 	GetInstallStatus(name string) (*InstallStatus, error)
-}
-
-type NetbootNixStorePaths struct {
-	TopLevel string
-	Kernel   string
-	Initrd   string
 }

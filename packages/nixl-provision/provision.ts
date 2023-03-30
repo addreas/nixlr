@@ -56,6 +56,7 @@ export async function provision(api: string, mac: string) {
   await copyGeneratedToRepo(api, info);
 
   await install(api, info);
+  await $`reboot`;
 }
 
 async function reportStatus(

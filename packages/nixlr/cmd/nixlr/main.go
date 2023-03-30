@@ -12,15 +12,27 @@ import (
 )
 
 var (
-	hostname = pflag.String("hostname", "localhost", "domain name where api will be available")
+	hostname = pflag.String("hostname", "localhost", "domain name where api will be available for nodes")
 	certFile = pflag.String("cert", "./tls.crt", "tls cert file")
 	keyFile  = pflag.String("key", "./tls.key", "tls key file")
+
+	nixlrApiPort = pflag.Int("port", 9813, "port for nixlr api")
+
+	pixiecoreApiPort = pflag.Int("pixiecore-api-port", 9814, "port for the pixiecore api responder")
+
+	pxeKernelStorePath   = pflag.String("pxe-kernel", "/nix/store/...", "nixosSystem.config.system.build.kernel")
+	pxeToplevelStorePath = pflag.String("pxe-toplevel", "/nix/store/...", "nixosSystem.config.system.build.toplevel")
+	pxeInitrdStorePath   = pflag.String("pxe-initrd", "/nix/store/...", "nixosSystem.config.system.build.netbootRamdisk")
 )
 
 func main() {
 	pflag.Parse()
 
-	registry := noderegistry.NewMemoryRegistry()
+	registry := noderegistry.NewMemoryRegistry(noderegistry.NetbootNixStorePaths{
+		Kernel:   *pxeKernelStorePath,
+		TopLevel: *pxeToplevelStorePath,
+		Initrd:   *pxeInitrdStorePath,
+	})
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -40,6 +52,6 @@ func main() {
 
 	pixiecore.MountPaths(pixieRouter.Group("/"), fmt.Sprintf("https://%s:9813", *hostname), registry)
 
-	go pixieRouter.Run("localhost:9814")
-	router.RunTLS("0.0.0.0:9813", *certFile, *keyFile)
+	go pixieRouter.Run(fmt.Sprintf("localhost:%d", pixiecoreApiPort))
+	router.RunTLS(fmt.Sprintf("0.0.0.0:%d", nixlrApiPort), *certFile, *keyFile)
 }

@@ -4,13 +4,14 @@ let
 in
 {
   options = {
-    services.nixl-self-deploy.enabled = lib.mkEnableOption "nixl self deploy";
-    services.nixl-self-deploy.settings.repo = lib.mkOption {
-      type = lib.types.string;
+    services.nixl-provision.enabled = lib.mkEnableOption "nixl provision";
+    services.nixl-provision.mode = lib.mkOption {
+      type = lib.types.enum ["ephemeral" "firstboot"];
     };
   };
 
   config = {
+    # TODO: mkIf
     systemd.services.nixl-provision = {
       description = "Run the nixl-provision daemon";
       wantedBy = [ "multi-user.target" ];

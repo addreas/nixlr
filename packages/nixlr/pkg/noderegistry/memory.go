@@ -4,17 +4,17 @@ import (
 	"fmt"
 )
 
-func NewMemoryRegistry() Registry {
-	return &memoryRegistry{}
+func NewMemoryRegistry(defaultNetbootStorePaths NetbootNixStorePaths) Registry {
+	return &memoryRegistry{
+		defaultNetbootStorepaths: defaultNetbootStorePaths,
+	}
 }
 
 type memoryNode struct {
 	mac  string
 	name string
 
-	topLevel string
-	kernel   string
-	initrd   string
+	netbootStorePaths *NetbootNixStorePaths
 
 	deployKey *string
 
@@ -25,6 +25,8 @@ type memoryNode struct {
 
 type memoryRegistry struct {
 	nodes []memoryNode
+
+	defaultNetbootStorepaths NetbootNixStorePaths
 
 	lockHolder *string
 }
@@ -48,18 +50,16 @@ func (r *memoryRegistry) getByName(name string) *memoryNode {
 }
 
 func (r *memoryRegistry) ShouldBoot(mac string) bool {
-	return r.getByMac(mac) != nil
+	node := r.getByMac(mac)
+	return node != nil && node.installStatus == nil
 }
 
 func (r *memoryRegistry) GetNetbootNixStorePaths(mac string) *NetbootNixStorePaths {
 	node := r.getByMac(mac)
-	if node == nil {
-		return nil
-	}
-	return &NetbootNixStorePaths{
-		TopLevel: node.topLevel, //"/nix/store/...", // nixosSystem.config.system.build.toplevel
-		Kernel:   node.kernel,   // "/nix/store/...", // nixosSystem.config.system.build.kernel
-		Initrd:   node.initrd,   //"/nix/store/...", // nixosSystem.config.system.build.netbootRamdisk
+	if node == nil || node.netbootStorePaths == nil {
+		return &r.defaultNetbootStorepaths
+	} else {
+		return node.netbootStorePaths
 	}
 }
 
