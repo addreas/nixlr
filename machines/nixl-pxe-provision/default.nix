@@ -33,6 +33,7 @@ in
   services.lldpd.enable = true;
   services.avahi.enable = true;
 
+  # TODO: use module ../packages/nixl-provision/module.nix instead
   systemd.services.nixl-provision = {
     description = "Run the nixl-provision daemon";
     wantedBy = [ "multi-user.target" ];
