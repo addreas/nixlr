@@ -23,9 +23,10 @@ type BlockDevice = {
   }[];
 };
 
-type Filesystem = {};
-type Mount = {};
+type Filesystem = {}; // TODO: fs config types
+type Mount = {}; // TODO: mount config types
 
+// TODO: what phases actually make sense?
 type ProvisionStatus = { ok: boolean } & (
   | {
       phase: "partitioning";
@@ -45,6 +46,8 @@ export async function provision(api: string, mac: string) {
     r.json()
   );
 
+
+  // TODO: this seems ripe for abstraction
   await partition(api, info);
   await filesystems(api, info);
   await mounts(api, info);
@@ -100,8 +103,8 @@ async function partition(api: string, info: ProvisionInfo) {
   }
 }
 
-async function filesystems(api: string, info: ProvisionInfo) {}
-async function mounts(api: string, info: ProvisionInfo) {}
+async function filesystems(api: string, info: ProvisionInfo) {} // TODO: fs provisioning
+async function mounts(api: string, info: ProvisionInfo) {} // TODO: mount porvisioning
 
 async function sshKeygen(api: string, info: ProvisionInfo) {
   const output = await $`
@@ -129,9 +132,9 @@ async function sshKeygen(api: string, info: ProvisionInfo) {
 }
 
 async function generateConfig(api: string, info: ProvisionInfo) {
+  // TODO: whats the actual nixos-generate-config --output-dir flag?
   await $`
-    nixos-generate-config --root $MNT
-    mv /etc/nixos /etc/nixos-generated
+    nixos-generate-config --root $MNT --output-dir /etc/nixos-generated
   `;
 }
 

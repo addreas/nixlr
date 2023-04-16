@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys, shlex, json
-
+# TODO: rewrite for deno?
 with open('/proc/cmdline', 'r') as cmdline:
     items = shlex.split(cmdline)
 

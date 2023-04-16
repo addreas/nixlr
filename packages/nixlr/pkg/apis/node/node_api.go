@@ -54,7 +54,7 @@ func MountPaths(router *gin.RouterGroup, reg noderegistry.Registry) {
 	})
 
 	router.GET("/secret/bootstraptoken", func(c *gin.Context) {
-		// TODO
+		// TODO how to handle bootstrap token?
 	})
 
 	router.GET("/lock/:name/aquire", func(c *gin.Context) {

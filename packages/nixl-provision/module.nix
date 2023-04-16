@@ -10,13 +10,13 @@ in
     };
   };
 
-  config = {
-    # TODO: mkIf
+  config = lib.mkIf config.services.nixl-provision.enabled {
     systemd.services.nixl-provision = {
       description = "Run the nixl-provision daemon";
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        ExecStart = "${nixl-provision}/bin/nixl-provision";
+        # TODO: api cmdline?
+        ExecStart = "${nixl-provision}/bin/nixl-provision --mac=$(${nixl-provision}/bin/cmdline mac) --api=$(${nixl-provision}/bin/cmdline api) --mode=${config.services.nixl-provision.mode}";
         StandardOutput = "journal+console";
       };
     };

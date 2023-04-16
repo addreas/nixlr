@@ -1,5 +1,6 @@
 { lib, stdenvNoCC, pkgs, ... }:
 let
+  # TODO: create mkDenoPackage lib
   lockfile = lib.importJSON ./deno.lock;
   deptodep = url: sha256: {
     inherit url;

@@ -15,7 +15,9 @@ type DiscoveryInfo = {
   lshw: LshwNode;
   cpuinfo: string;
 
-  // lspci: string;
+  // lspci: string; // pciutils
+  // lscpu: string;
+  // lsmem: string;
   // lsusb: string;
   // dmidecode: string;
   // efibootmgr: string;
@@ -35,6 +37,7 @@ export async function discovery(api: string, mac: string) {
 
 async function getDiscoveryInfo(): Promise<DiscoveryInfo> {
   // https://maas.io/docs/commissioning-logs-reference
+  // TODO: move abstract each command into `<command>.ts`
   return {
     lsblk: await $`lsblk --output-all --json`.json().then(({ blockdevices }) => blockdevices), // util-linux
     ip: {

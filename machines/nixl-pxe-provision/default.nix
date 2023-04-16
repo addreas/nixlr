@@ -1,5 +1,6 @@
 { config, pkgs, lib, modulesPath, ... }:
 let
+  # TODO: generic module for tmpfs systems
   nixl-provision = pkgs.callPackage ../../packages/nixl-provision {};
 in
 {

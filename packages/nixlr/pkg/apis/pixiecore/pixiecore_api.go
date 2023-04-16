@@ -17,6 +17,10 @@ func MountPaths(router *gin.RouterGroup, nixlrApi string, reg noderegistry.Regis
 			return
 		}
 
+		// TODO: should netboot image be configured per node or globally
+		// tmpfs ephemeral nodes could be booted directly to the "real" system
+		// global config would make for a "nice" and simple setup
+		// per node config opens up for incorrect store paths that dont exist on the nixlr system
 		paths := reg.GetNetbootNixStorePaths(mac)
 
 		c.JSON(200, gin.H{
