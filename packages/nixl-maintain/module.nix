@@ -13,8 +13,14 @@ in
   };
 
   config = {
-    # TOOD mkif
-    systemd.services.nixl-maintain = {
+    programs.ssh.knownHostsFiles = [
+      (pkgs.writeText "github.keys" ''
+        github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+        github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      '')
+    ];
+
+    systemd.services.nixl-maintain = lib.mkIf {
       description = "Run the nixl-maintain daemon";
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
@@ -23,9 +29,11 @@ in
       };
     };
 
-    # TOOD mkif
-    systemd.services.nixl-self-deploy = {
+    systemd.services.nixl-self-deploy = lib.mkIf {
       description = "Run the nixl-self-deploy script";
+      # TOOD: serviceConfig for nixl-self-deploy
     };
+
+    # TODO: nixl-self-deploy timer?
   };
 }

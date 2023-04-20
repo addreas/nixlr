@@ -1,4 +1,4 @@
-import $ from "https://deno.land/x/dax/mod.ts";
+import $ from "https://deno.land/x/dax@0.30.1/mod.ts";
 
 import { IpLink, IpRoute, IpRule } from "./ip.ts";
 import { LsblkDev } from "./lsblk.ts";

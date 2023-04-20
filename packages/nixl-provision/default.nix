@@ -1,40 +1,11 @@
-{ lib, stdenvNoCC, pkgs, ... }:
-let
-  # TODO: create mkDenoPackage lib
-  lockfile = lib.importJSON ./deno.lock;
-  deptodep = url: sha256: {
-    inherit url;
-    name = "./" + (lib.strings.removePrefix "https://" url);
-    path = fetchurl { inherit url sha256; };
-  };
-  dependencies = lib.attrsets.mapAttrsToList deptodep lockfile.remote;
-  import-map = pkgs.writeFile "import-map.json" (builtins.toJSON {
-    imports = lib.list.listToAttrs dependencies (dep: {
-      key = dep.url;
-      value = dep.name;
-    });
-  });
-  deno-cache = pkgs.linkfarm "deno-cache" (dependencies [ import-map ]);
-in
-stdenvNoCC.mkDerivation rec {
+{ lib, mkDenoPackage, ... }: mkDenoPackage {
   pname = "nixl-provision";
   version = "0.0.0";
 
+  denoRunArgs = "--allow-all";
+
+  # TODO: should "https://deno.land/x/dax@0.30.1/src/lib/rs_lib_bg.wasm": "2c6e6515e0699efa1c04a78fa1b2861e5d44fede2eb91940b0458816bcac3b9d" be added to the deno.lock here instead?
+
   # src = ./.;
   src = lib.cleanSource ./.;
-
-  postPatch = ''
-    substituteInPlace bin/${pname} \
-      --replace deno "${pkgs.deno}/bin/deno --import-map ${deno-cache}/import-map.json"
-    substituteInPlace bin/cmdline \
-      --replace "/usr/bin/env python3" ${pkgs.python3}/bin/python3
-  '';
-
-  buildPhase =  ''
-    mkdir -p $out
-    cp -r . $out
-  '';
-
-  dontConfigure = true;
-  dontInstall = true;
 }

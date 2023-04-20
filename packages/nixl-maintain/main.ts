@@ -1,4 +1,5 @@
-import $ from "https://deno.land/x/dax/mod.ts";
+#!/usr/bin/env -S deno run --allow-all
+import $ from "https://deno.land/x/dax@0.30.1/mod.ts";
 
 // run a command
 await $`echo 5`; // outputs: 5

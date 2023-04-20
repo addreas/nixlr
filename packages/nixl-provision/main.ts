@@ -1,4 +1,5 @@
-import {parse} from "https://deno.land/std/flags/mod.ts"
+#!/usr/bin/env -S deno run --allow-all
+import {parse} from "https://deno.land/std@0.181.0/flags/mod.ts"
 import { discovery } from "./discovery/mod.ts"
 import { firstboot } from "./firstboot.ts"
 import { provision } from "./provision.ts"
