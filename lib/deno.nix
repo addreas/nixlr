@@ -28,7 +28,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
     mkdir -p $out/bin
     cp -r . $out
     cp ${import-map} $out/import-map.json
-    echo "${pkgs.deno}/bin/deno run --import-map $out/import-map.json ${denoRunArgs} $out/${main} '\"$@\"'" > $out/bin/${pname}
+    echo "${pkgs.deno}/bin/deno run --import-map $out/import-map.json ${denoRunArgs} $out/${main} \"\$@\"" > $out/bin/${pname}
     chmod +x $out/bin/${pname}
   '';
 }

@@ -1,6 +1,9 @@
 { lib, mkDenoPackage, ... }: mkDenoPackage {
-  pname = "nixl-maintain";
+  pname = "cmdline";
   version = "0.0.0";
 
+  denoRunArgs = "--allow-read=/proc/cmdline";
+
   src = lib.cleanSource ./.;
+  main = "cmdline.ts";
 }

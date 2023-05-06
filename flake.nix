@@ -15,6 +15,8 @@
           mkDenoPackage = import ./lib/deno.nix { inherit lib pkgs; };
         in
         {
+          cmdline = callPackage ./packages/cmdline { inherit mkDenoPackage; };
+
           nixlr = callPackage ./packages/nixlr { };
           nixl-maintain = callPackage ./packages/nixl-maintain { inherit mkDenoPackage; };
           nixl-provision = callPackage ./packages/nixl-provision { inherit mkDenoPackage; };

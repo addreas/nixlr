@@ -1,22 +1,26 @@
 { config, pkgs, lib, ... }:
 let
-  nixl-provision = pkgs.callPackage ./default {};
+  cfg = config.services.nixl-provision;
 in
 {
-  options = {
-    services.nixl-provision.enabled = lib.mkEnableOption "nixl provision";
-    services.nixl-provision.mode = lib.mkOption {
+  options.services.nixl-provision = {
+    enabled = lib.mkEnableOption "nixl provision";
+    package = lib.mkPackageOption "nixl provision";
+
+    mode = lib.mkOption {
       type = lib.types.enum ["ephemeral" "firstboot"];
       default = "firstboot";
     };
+
+    cmdlinePackage = lib.mkPackageOption "nixl provision";
   };
 
-  config = lib.mkIf config.services.nixl-provision.enabled {
+  config = lib.mkIf cfg.enabled {
 
     networking.hostName = ""; # these have to be set via kernel cmdline
 
     system.activationScripts.cmdline-setup = ''
-      HOSTNAME=$(${nixl-provision}/bin/cmdline hostname)
+      HOSTNAME=$(${cfg.cmdlinePackage}/bin/cmdline hostname)
       if [[ "$HOSTNAME" != "" ]]; then
         hostname $HOSTNAME
         echo $HOSTNAME > /etc/hostname
@@ -30,12 +34,11 @@ in
       description = "Run the nixl-provision daemon";
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        # TODO: api cmdline?
         ExecStart = ''
-          ${nixl-provision}/bin/nixl-provision \
-            --mac=$(${nixl-provision}/bin/cmdline mac) \
-            --api=$(${nixl-provision}/bin/cmdline api) \
-            --mode=${config.services.nixl-provision.mode}
+          ${cfg.package}/bin/nixl-provision \
+            --mac=$(${cfg.cmdlinePackage}/bin/cmdline mac) \
+            --api=$(${cfg.cmdlinePackage}/bin/cmdline api) \
+            --mode=${cfg.mode}
         '';
         StandardOutput = "journal+console";
       };

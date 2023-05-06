@@ -31,7 +31,7 @@ in
 
     systemd.services.nixl-self-deploy = lib.mkIf {
       description = "Run the nixl-self-deploy script";
-      # TOOD: serviceConfig for nixl-self-deploy
+      # TODO: serviceConfig for nixl-self-deploy
     };
 
     # TODO: nixl-self-deploy timer?

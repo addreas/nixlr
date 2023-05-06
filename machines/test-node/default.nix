@@ -14,6 +14,6 @@
   services.nixl-self-deploy.enabled = true;
   services.nixl-self-deploy.settings = {
     repo = "git@github.com:addreas/nixlr.git";
-    timer = "daily"; # TODO: implement self-deploy timer
+    timer = "daily"; # TODO: implement self-deploy timer in ../../packages/nixl-maintain/module.nix
   };
 }
