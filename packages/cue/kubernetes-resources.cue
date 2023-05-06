@@ -1,10 +1,12 @@
 package apis
 
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 #NixNode: {
-	// #TypeMeta
-	// #ObjectMeta
-	spec:   #NixNodeSpec
-	status: #NixNodeStatus
+	metav1.#TypeMeta
+	metadata: metav1.#ObjectMeta @go(Metadata,ObjectMeta)
+	spec:     #NixNodeSpec       @go(Spec,NixNodeSpec)
+	status:   #NixNodeStatus     @go(Status,NixNodeStatus)
 }
 
 #NixNodeSpec: {

@@ -31,7 +31,7 @@ func MountPaths(router *gin.RouterGroup, reg noderegistry.Registry) {
 		}
 	})
 
-	router.PUT("/deploy-key/:name", func(c *gin.Context) {
+	router.POST("/deploy-key/:name", func(c *gin.Context) {
 		name := c.Params.ByName("name")
 		data, err := c.GetRawData()
 		if err != nil {

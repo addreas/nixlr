@@ -20,8 +20,8 @@
           nixl-provision = callPackage ./packages/nixl-provision { inherit mkDenoPackage; };
           nixlr-ui = callPackage ./packages/nixlr-ui { };
 
-          typescript-types = callPackage ./packages/apis/typescript-codegen.nix { inherit openapi-typescript; };
-          go-types = callPackage ./packages/apis/go-codegen.nix { inherit oapi-codegen; };
+          typescript-types = callPackage ./packages/cue/nix/typescript-codegen.nix { inherit openapi-typescript; };
+          go-types = callPackage ./packages/cue/nix/go-codegen.nix { inherit oapi-codegen; };
         };
 
       nixosConfigurations =

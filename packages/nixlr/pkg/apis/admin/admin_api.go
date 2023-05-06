@@ -7,9 +7,10 @@ import (
 )
 
 func MountPaths(router *gin.RouterGroup, reg noderegistry.Registry) {
-	router.GET("/login", func(c *gin.Context) {
+	router.GET("/login/device-code", func(c *gin.Context) {
 		// TODO: github.Login()
 	})
+
 	router.GET("/discovery", func(c *gin.Context) {
 		discoveredNodes := reg.GetDiscovery()
 		c.JSON(200, discoveredNodes)
