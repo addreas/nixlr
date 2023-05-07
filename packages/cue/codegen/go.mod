@@ -2,7 +2,10 @@ module github.com/addreas/nixlr/packages/cue/codegen
 
 go 1.20
 
-require cuelang.org/go v0.5.0
+require (
+	cuelang.org/go v0.5.0
+	github.com/gobeam/stringy v0.0.6
+)
 
 require (
 	github.com/cockroachdb/apd/v2 v2.0.2 // indirect

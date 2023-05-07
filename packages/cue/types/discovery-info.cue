@@ -19,21 +19,18 @@ package types
 	lldp?:       string
 }
 
-#IpLinkFlags: "LOOPBACK" | "BROADCAST" | "MULTICAST" | "MASTER" | "NOARP" | "UP" | "LOWER_UP"
-#IpLinkType:  "ether" | "loopback" | "bridge" | "bridge_slave" | "bond" | "bond_slave" | "can" | "dummy" | "hsr" | "ifb" | "ipoib" | "macvlan" | "macvtap" | "vcan" | "veth" | "vlan" | "vxlan" | "ip6tnl" | "ipip" | "sit" | "gre" | "gretap" | "erspan" | "ip6gre" | "ip6gretap" | "ip6erspan" | "vti" | "vrf" | "nlmon" | "ipvlan" | "lowpan" | "geneve" | "macsec"
-
 #IpLink: {
 	ifindex:     number // 1 | 2 | 3 | ... | 112
 	link_index?: number // 2 | 9 | 11 | ... | 111
 	link?:       string // "cilium_net" | "cilium_host"
 	ifname:      string // "eno1" | "eth0" | "sit0" | "tun0" | "bond0" | "cilium_host" | "cilium_net"
-	flags: [...#IpLinkFlags]
+	flags: [...("LOOPBACK" | "BROADCAST" | "MULTICAST" | "MASTER" | "NOARP" | "UP" | "LOWER_UP")]
 	mtu:       number // 1500 | 65536
 	qdisc:     "mq" | "noop" | "noqueue"
 	operstate: "UP" | "DOWN" | "UNKNOWN"
 	group:     string // "default"
 	txqlen:    number // 1000
-	link_type: #IpLinkType
+	link_type: "ether" | "loopback" | "bridge" | "bridge_slave" | "bond" | "bond_slave" | "can" | "dummy" | "hsr" | "ifb" | "ipoib" | "macvlan" | "macvtap" | "vcan" | "veth" | "vlan" | "vxlan" | "ip6tnl" | "ipip" | "sit" | "gre" | "gretap" | "erspan" | "ip6gre" | "ip6gretap" | "ip6erspan" | "vti" | "vrf" | "nlmon" | "ipvlan" | "lowpan" | "geneve" | "macsec"
 
 	address:       string // "00:15:5d:6f:77:f9"
 	broadcast:     string // "ff:ff:ff:ff:ff:ff"
@@ -41,7 +38,7 @@ package types
 	altnames?: [...string] // ["enp0s31f6"]
 	addr_info: [...#IpAddr]
 
-	[string]: _
+	...
 }
 
 #IpAddr: {
@@ -60,15 +57,15 @@ package types
 #IpRule: {
 	priority: number
 	src:      "all"
-	fwmark?:  "0x\(string)"
-	fwmask?:  "0x\(string)"
-	table:    string // main | default | 2004 | 2005
+	fwmark?:  =~#"0x\w+"# // "0x\(string)"
+	fwmask?:  =~#"0x\w+"# // "0x\(string)"
+	table:    string      // main | default | 2004 | 2005
 
 	...
 }
 
 #IpRoute: {
-	dst:       "\(string)/\(number)"
+	dst:       =~#".*/\d+"# // "\(string)/\(number)"
 	gateway:   string
 	dev:       string // eno1 | cilium_host
 	protocol?: "kernel" | "boot" | "static" | "ra" | "dhcp"
@@ -76,7 +73,7 @@ package types
 	prefsrc?:  string // "192.168.1.106"
 	metric?:   number // 1024
 	metrics?: [...{mtu: number}]
-	flags: []
+	flags: [...string]
 
 	...
 }
@@ -153,7 +150,7 @@ package types
 	fsused: null | number
 
 	// filesystem use percentage
-	"fsuse%": null | "\(number)%"
+	"fsuse%": null | =~#"\d+%"# // "\(number)%"
 
 	// filesystem version
 	fsver: null | string // null | "1" | "1.0" | "FAT32"
@@ -162,7 +159,7 @@ package types
 	group: "disk" | "cdrom"
 
 	// Host:Channel:Target:Lun for SCSI
-	hctl: null | "\(number):\(number):\(number):\(number)"
+	hctl: null | =~#"\d+:\d+:\d+:\d+"# // "\(number):\(number):\(number):\(number)"
 
 	// removable or hotplug device (usb, pcmcia, ...)
 	hotplug: bool
@@ -177,13 +174,13 @@ package types
 	"log-sec": number // 512
 
 	// major:minor device number
-	"maj:min": "\(number):\(number)"
+	"maj:min": =~#"\d+:\d+"# //  "\(number):\(number)"
 
 	// minimum I/O size
 	"min-io": number // 512 | 4096
 
 	// device node permissions
-	mode: "brw-rw----"
+	mode: string // "brw-rw----"
 
 	// device identifier
 	model: string // "VIRTUAL-DISK" | "\(")AMSUNG" | "KINGSTON" | "ADATA" | "SanDisk"} \(string)" | "ST\(string)-\(string)" |

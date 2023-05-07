@@ -12,7 +12,8 @@ import (
 func main() {
 	ctx := cuecontext.New()
 	// insts := load.Instances([]string{"."}, &load.Config{Dir: "..", Package: "apis"})
-	insts := load.Instances([]string{"."}, &load.Config{Dir: ".", Package: "v1beta1"})
+	// insts := load.Instances([]string{"."}, &load.Config{Dir: ".", Package: "v1beta1"})
+	insts := load.Instances([]string{"."}, &load.Config{Dir: "../types"})
 	vals, err := ctx.BuildInstances(insts)
 	if err != nil {
 		panic(err)

@@ -50,7 +50,10 @@ func Generate(val cue.Value) ([]byte, error) {
 		}
 	})
 
-	g.handleFields(val)
+	err := g.handleFields(val)
+	if err != nil {
+		return nil, err
+	}
 	// g.handleHandlers(val)
 
 	output := bytes.Buffer{}
@@ -89,14 +92,16 @@ func (g *generator) handleFields(val cue.Value) error {
 	for it.Next() {
 		sel := it.Selector()
 		val := it.Value()
-		isOptional := it.IsOptional()
+
+		// fmt.Printf("%s: %s\n", sel, val)
 
 		switch val.IncompleteKind() {
 		case cue.StructKind:
-			err := g.handleStruct(sel, val, isOptional)
+			_, err := g.handleStruct(cue.MakePath(sel), val)
 			if err != nil {
 				return err
 			}
+			// fmt.Printf("generated type for %s\n", name)
 		case cue.StringKind:
 			if op, operands := val.Expr(); op == cue.OrOp {
 				g.handleStringEnum(strings.TrimPrefix(sel.String(), "#"), operands)

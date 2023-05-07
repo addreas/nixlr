@@ -8,6 +8,8 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/ast"
 	cueformat "cuelang.org/go/cue/format"
+
+	"github.com/gobeam/stringy"
 )
 
 type structDef struct {
@@ -41,7 +43,7 @@ type enumDef struct {
 }
 
 func capitalize(in string) string {
-	return strings.ToUpper(in[:1]) + in[1:]
+	return stringy.New(in).CamelCase()
 }
 
 var enumTemplate = template.Must(template.New("enumdef").Funcs(template.FuncMap{
@@ -55,9 +57,10 @@ const (
 )
 `))
 
-func (g *generator) handleStruct(sel cue.Selector, val cue.Value, optional bool) error {
+func (g *generator) handleStruct(path cue.Path, val cue.Value) (string, error) {
+	name := strings.TrimPrefix(path.String(), "#")
 	typeDef := structDef{
-		Name:   strings.TrimPrefix(sel.String(), "#"),
+		Name:   name,
 		Embeds: []string{},
 		Fields: []structField{},
 	}
@@ -76,24 +79,33 @@ func (g *generator) handleStruct(sel cue.Selector, val cue.Value, optional bool)
 		} else {
 			fields, err := ex.Value().Fields(cue.Optional(true))
 			if err != nil {
-				return err
+				return "", err
 			}
 			for fields.Next() {
-				jsonName := fields.Selector().String()
+				jsonName := strings.Trim(fields.Selector().String(), "\"")
 				goAttribute := fields.Value().Attribute("go")
 				goName, _ := goAttribute.String(0)
 				if goName == "" {
-					goName = capitalize(jsonName)
+					goName = stringy.New(jsonName).CamelCase(":")
 				}
 				goType, _ := goAttribute.String(1)
 				if goType == "" {
-					goType = g.defaultTypeFor(fields.Value(), fields.IsOptional())
+					goType, err = g.defaultTypeFor(fields.Value(), fields.IsOptional())
+					if err != nil {
+						return "", err
+					}
 				}
 				maybeOmitEmpty := ""
 				if fields.IsOptional() {
 					maybeOmitEmpty = ",omitempty"
 				}
-				src, _ := cueformat.Node(fields.Value().Source().(*ast.Field).Value)
+				var src []byte
+				switch fields.Value().Source().(type) {
+				case *ast.Field:
+					src, _ = cueformat.Node(fields.Value().Source().(*ast.Field).Value)
+				default:
+					src = []byte(fmt.Sprintf("%s", fields.Value()))
+				}
 				typeDef.Fields = append(typeDef.Fields, structField{
 					Name:  goName,
 					Type:  goType,
@@ -103,30 +115,19 @@ func (g *generator) handleStruct(sel cue.Selector, val cue.Value, optional bool)
 		}
 	}
 	g.structs = append(g.structs, typeDef)
-	return nil
+	return name, nil
 }
 
-func (g *generator) defaultTypeFor(val cue.Value, optional bool) string {
-	if op, operands := val.Expr(); op != cue.NoOp {
-		switch op {
-		case cue.OrOp:
-			if val.IncompleteKind() == cue.StringKind {
-				name := strings.Replace(strings.TrimPrefix(val.Path().String(), "#"), ".", "", -1)
-				g.handleStringEnum(name, operands)
-				return name
-			}
-		}
+func (g *generator) defaultTypeFor(val cue.Value, optional bool) (string, error) {
+	t, err := g._defaultTypeFor(val.Path(), val)
+	if optional && val.IncompleteKind() != cue.ListKind {
+		return fmt.Sprintf("*%s", t), err
 	}
+	return t, err
 
-	t := _defaultTypeFor(val)
-	if optional {
-		return "*" + t
-	} else {
-		return t
-	}
 }
 
-func (g *generator) handleStringEnum(name string, operands []cue.Value) {
+func (g *generator) handleStringEnum(name string, operands []cue.Value) (string, error) {
 	values := []string{}
 	for _, op := range operands {
 		values = append(values, strings.Trim(fmt.Sprint(op), "\""))
@@ -135,28 +136,70 @@ func (g *generator) handleStringEnum(name string, operands []cue.Value) {
 		Name:   name,
 		Values: values,
 	})
+
+	return name, nil
 }
 
-func _defaultTypeFor(val cue.Value) string {
+func nameForPath(path cue.Path) string {
+	res := ""
+	for _, sel := range path.Selectors() {
+		res += stringy.New(sel.String()).CamelCase("?", ".", "#", "")
+	}
+	return res
+}
+
+func (g *generator) _defaultTypeFor(path cue.Path, val cue.Value) (string, error) {
+	if ref, path := val.ReferencePath(); ref.Exists() {
+		return nameForPath(path), nil
+	}
+
+	if op, operands := val.Expr(); op != cue.NoOp {
+		switch op {
+		case cue.OrOp:
+			if val.IncompleteKind().IsAnyOf(cue.NullKind) {
+				var exprs []ast.Expr
+				for _, o := range operands {
+					if o.Kind() != cue.NullKind {
+						exprs = append(exprs, o.Source().(ast.Expr))
+					}
+				}
+				t, err := g._defaultTypeFor(val.Path(), val.Context().BuildExpr(ast.NewBinExpr(cue.OrOp.Token(), exprs...)))
+				// fmt.Printf("default nullable %s: %s\n", path, val)
+				return fmt.Sprintf("*%s", t), err
+			} else if val.IncompleteKind() == cue.StringKind {
+				// fmt.Printf("default enum %s: %s\n", path, val)
+				return g.handleStringEnum(nameForPath(path), operands)
+			}
+		default:
+			// return "", fmt.Errorf("no handler for op: %s (%s)", op, val)
+		}
+	}
+
 	switch val.IncompleteKind() {
 	case cue.StringKind:
-		return "string"
+		return "string", nil
 	case cue.BoolKind:
-		return "bool"
+		return "bool", nil
 	case cue.BytesKind:
-		return "bytes"
-	case cue.FloatKind:
-		return "float64"
+		return "bytes", nil
 	case cue.IntKind:
-		return "int"
+		return "int", nil
+	case cue.FloatKind:
+		return "float64", nil
+	case cue.NumberKind:
+		return "float64", nil
 	case cue.ListKind:
-		return "[]" + _defaultTypeFor(val.LookupPath(cue.MakePath(cue.AnyIndex)))
+		// fmt.Printf("default list %#v\n", val)
+		name, err := g._defaultTypeFor(path, val.LookupPath(cue.MakePath(cue.AnyIndex)))
+		return fmt.Sprintf("[]%s", name), err
 	case cue.TopKind:
-		return "interface{}"
+		return "interface{}", nil
+	case cue.StructKind:
+		// fmt.Printf("recursive struct %s: %s\n", path, val)
+		return g.handleStruct(path, val)
+	case cue.StringKind | cue.NumberKind:
+		return "json.RawValue", nil
 	default:
-		if ref, path := val.ReferencePath(); ref.Exists() {
-			return strings.TrimPrefix(path.String(), "#")
-		}
-		return "unknown"
+		return "", fmt.Errorf("no handler for kind: %s (%s)", val.IncompleteKind(), val)
 	}
 }
