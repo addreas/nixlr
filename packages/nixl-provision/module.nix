@@ -1,18 +1,23 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, flakePkgs, ... }:
 let
   cfg = config.services.nixl-provision;
 in
 {
   options.services.nixl-provision = {
     enabled = lib.mkEnableOption "nixl provision";
-    package = lib.mkPackageOption "nixl provision";
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = flakePkgs.nixl-provision;
+    };
 
     mode = lib.mkOption {
       type = lib.types.enum ["ephemeral" "firstboot"];
-      default = "firstboot";
     };
 
-    cmdlinePackage = lib.mkPackageOption "nixl provision";
+    cmdlinePackage = lib.mkOption {
+      type = lib.types.package;
+      default = flakePkgs.cmdline;
+    };
   };
 
   config = lib.mkIf cfg.enabled {
@@ -41,6 +46,8 @@ in
             --mode=${cfg.mode}
         '';
         StandardOutput = "journal+console";
+        Restart = "always";
+        RestartSec = "5min";
       };
     };
   };

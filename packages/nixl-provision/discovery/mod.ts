@@ -24,18 +24,7 @@ type DiscoveryInfo = {
   // lldp: string;
 };
 
-export async function discovery(api: string, mac: string) {
-  const discoveryInfo = await getDiscoveryInfo();
-  console.log("discovering", discoveryInfo);
-  await fetch(`${api}/discovery/${mac}`, reqJson("PUT", discoveryInfo));
-
-  while (await fetch(`${api}/provision/${mac}`).then((r) => !r.ok)) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await fetch(`${api}/discovery/${mac}`, reqJson("PUT", discoveryInfo));
-  }
-}
-
-async function getDiscoveryInfo(): Promise<DiscoveryInfo> {
+export async function discovery(): Promise<DiscoveryInfo> {
   // https://maas.io/docs/commissioning-logs-reference
   // TODO: move abstract each command into `<command>.ts`
   return {
@@ -55,6 +44,3 @@ async function getDiscoveryInfo(): Promise<DiscoveryInfo> {
     // lldp: await $`lldpctl`.text(),  // lldpd (services.lldpd.enable)
   };
 }
-
-
-

@@ -30,13 +30,14 @@
         let
           just-a-machine = name: nixpkgs.lib.nixosSystem {
             inherit system;
-            modules = [ "${self}/machines/${name}" ];
+            specialArgs = { flakePkgs = self.packages.${system};};
+            modules = [ "${self}/machines/${name}/configuration.nix" ];
           };
         in
         {
           nixl-pxe-provision = just-a-machine "nixl-pxe-provision";
           nixl-pxe-tmpfs = just-a-machine "nixl-pxe-tmpfs";
-          test-node = just-a-machine "test-node";
+          # test-node = just-a-machine "test-node";
         };
     };
 }

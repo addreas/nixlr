@@ -1,15 +1,19 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, flakePkgs, ... }:
 let
   nixl-maintain = pkgs.callPackage ./default {};
 in
 {
-  options = {
-    services.nixl-maintain.enabled = lib.mkEnableOption "nixl maintain daemon";
-
-    services.nixl-self-deploy.enabled = lib.mkEnableOption "nixl self deploy";
-    services.nixl-self-deploy.settings.repo = lib.mkOption {
-      type = lib.types.string;
+  options.services.nixl-maintain = {
+    enabled = lib.mkEnableOption "nixl maintain daemon";
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = flakePkgs.nixl-maintain;
     };
+  };
+  options.services.nixl-self-deploy = {
+    enabled = lib.mkEnableOption "nixl self deploy";
+    settings.repo = lib.mkOption { type = lib.types.string; };
+    settings.timer = lib.mkOption { type = lib.types.string; };
   };
 
   config = {
@@ -20,16 +24,16 @@ in
       '')
     ];
 
-    systemd.services.nixl-maintain = lib.mkIf {
+    systemd.services.nixl-maintain = lib.mkIf config.services.nixl-maintain.enabled {
       description = "Run the nixl-maintain daemon";
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        ExecStart = "${nixl-maintain}/bin/nixl-maintain";
+        ExecStart = "${config.services.nixl-maintain.package}/bin/nixl-maintain";
         StandardOutput = "journal+console";
       };
     };
 
-    systemd.services.nixl-self-deploy = lib.mkIf {
+    systemd.services.nixl-self-deploy = lib.mkIf config.services.nixl-self-deploy.enabled {
       description = "Run the nixl-self-deploy script";
       # TODO: serviceConfig for nixl-self-deploy
     };
