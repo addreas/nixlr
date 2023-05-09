@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"cuelang.org/go/cue/ast"
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
 
@@ -19,11 +20,17 @@ func main() {
 		panic(err)
 	}
 
-	val := vals[0]
-	// fmt.Printf("cue  val: %#v\n", val)
-	gocode, err := gocode.Generate(val)
-	if err != nil {
-		panic(err)
+	_, vals = vals[0].Expr() // split single instance into files
+
+	for _, val := range vals {
+		f := val.Source().(*ast.File)
+		fmt.Println(f.Filename)
+
+		gocode, err := gocode.Generate(val)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s", gocode)
 	}
-	fmt.Printf("%s", gocode)
+	// fmt.Printf("cue  val: %#v\n", val)
 }

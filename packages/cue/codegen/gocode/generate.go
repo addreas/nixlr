@@ -2,6 +2,7 @@ package gocode
 
 import (
 	"bytes"
+	"go/format"
 	"strings"
 	"text/template"
 
@@ -25,7 +26,7 @@ type importSpec struct {
 var importsTemplate = template.Must(template.New("imports").Parse(`
 import (
 {{- range $import := . }}
-	{{ $import.Label }} {{ $import.Package }}
+	{{ $import.Label }} "{{ $import.Package }}"
 {{- end }}
 )
 `))
@@ -43,10 +44,7 @@ func Generate(val cue.Value) ([]byte, error) {
 			if spec.Name != nil {
 				label = spec.Name.Name
 			}
-			g.imports = append(g.imports, importSpec{
-				Label:   label,
-				Package: spec.Path.Value,
-			})
+			g.addImport(label, strings.Trim(spec.Path.Value, "\""))
 		}
 	})
 
@@ -58,7 +56,9 @@ func Generate(val cue.Value) ([]byte, error) {
 
 	output := bytes.Buffer{}
 
-	importsTemplate.Execute(&output, g.imports)
+	if len(g.imports) > 0 {
+		importsTemplate.Execute(&output, g.imports)
+	}
 
 	for _, enum := range g.enums {
 		if err := enumTemplate.Execute(&output, enum); err != nil {
@@ -79,10 +79,11 @@ func Generate(val cue.Value) ([]byte, error) {
 		}
 	}
 
-	return output.Bytes(), nil
-	// return format.Source(output.Bytes())
+	// return output.Bytes(), nil
+	return format.Source(output.Bytes())
 
 }
+
 func (g *generator) handleFields(val cue.Value) error {
 	it, err := val.Fields(cue.Definitions(true))
 	if err != nil {
@@ -111,4 +112,17 @@ func (g *generator) handleFields(val cue.Value) error {
 	}
 
 	return nil
+}
+
+func (g *generator) addImport(label, pkg string) {
+	spec := importSpec{
+		Label:   label,
+		Package: pkg,
+	}
+	for _, existing := range g.imports {
+		if existing == spec {
+			return
+		}
+	}
+	g.imports = append(g.imports, spec)
 }

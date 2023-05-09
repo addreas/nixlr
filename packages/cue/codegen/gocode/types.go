@@ -42,23 +42,25 @@ type enumDef struct {
 	Values []string
 }
 
-func capitalize(in string) string {
-	return stringy.New(in).CamelCase()
+func camelize(name string) string {
+	camelName := stringy.New(name).CamelCase()
+	cleanCamelName := stringy.New(camelName).RemoveSpecialCharacter()
+	return cleanCamelName
 }
 
 var enumTemplate = template.Must(template.New("enumdef").Funcs(template.FuncMap{
-	"capitalize": capitalize,
+	"camelize": camelize,
 }).Parse(`
 type {{ .Name }} string
 const (
 	{{- range $val := .Values }}
-		{{ $.Name }}{{ $val | capitalize }} {{ $.Name }} = "{{ $val }}"
+		{{ $.Name }}{{ $val | camelize }} {{ $.Name }} = "{{ $val }}"
 	{{- end }}
 )
 `))
 
 func (g *generator) handleStruct(path cue.Path, val cue.Value) (string, error) {
-	name := strings.TrimPrefix(path.String(), "#")
+	name := camelize(path.String())
 	typeDef := structDef{
 		Name:   name,
 		Embeds: []string{},
@@ -86,7 +88,7 @@ func (g *generator) handleStruct(path cue.Path, val cue.Value) (string, error) {
 				goAttribute := fields.Value().Attribute("go")
 				goName, _ := goAttribute.String(0)
 				if goName == "" {
-					goName = stringy.New(jsonName).CamelCase(":")
+					goName = camelize(jsonName)
 				}
 				goType, _ := goAttribute.String(1)
 				if goType == "" {
@@ -109,7 +111,7 @@ func (g *generator) handleStruct(path cue.Path, val cue.Value) (string, error) {
 				typeDef.Fields = append(typeDef.Fields, structField{
 					Name:  goName,
 					Type:  goType,
-					Attrs: fmt.Sprintf("`json:\"%s%s\" cue:\"%s\"`", jsonName, maybeOmitEmpty, src),
+					Attrs: fmt.Sprintf("`json:\"%s%s\" cue:\"%s\"`", jsonName, maybeOmitEmpty, strings.Replace(string(src), "\"", "\\\"", -1)),
 				})
 			}
 		}
@@ -140,17 +142,9 @@ func (g *generator) handleStringEnum(name string, operands []cue.Value) (string,
 	return name, nil
 }
 
-func nameForPath(path cue.Path) string {
-	res := ""
-	for _, sel := range path.Selectors() {
-		res += stringy.New(sel.String()).CamelCase("?", ".", "#", "")
-	}
-	return res
-}
-
 func (g *generator) _defaultTypeFor(path cue.Path, val cue.Value) (string, error) {
 	if ref, path := val.ReferencePath(); ref.Exists() {
-		return nameForPath(path), nil
+		return camelize(path.String()), nil
 	}
 
 	if op, operands := val.Expr(); op != cue.NoOp {
@@ -168,7 +162,7 @@ func (g *generator) _defaultTypeFor(path cue.Path, val cue.Value) (string, error
 				return fmt.Sprintf("*%s", t), err
 			} else if val.IncompleteKind() == cue.StringKind {
 				// fmt.Printf("default enum %s: %s\n", path, val)
-				return g.handleStringEnum(nameForPath(path), operands)
+				return g.handleStringEnum(camelize(path.String()), operands)
 			}
 		default:
 			// return "", fmt.Errorf("no handler for op: %s (%s)", op, val)
@@ -198,6 +192,7 @@ func (g *generator) _defaultTypeFor(path cue.Path, val cue.Value) (string, error
 		// fmt.Printf("recursive struct %s: %s\n", path, val)
 		return g.handleStruct(path, val)
 	case cue.StringKind | cue.NumberKind:
+		g.addImport("", "encoding/json")
 		return "json.RawValue", nil
 	default:
 		return "", fmt.Errorf("no handler for kind: %s (%s)", val.IncompleteKind(), val)
