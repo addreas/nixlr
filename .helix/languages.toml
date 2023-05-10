@@ -1,0 +1,9 @@
+[[language]]
+name = "typescript"
+
+[language.config]
+enable = true
+
+[language.language-server]
+args = ["lsp"]
+command = "deno"
