@@ -6,6 +6,7 @@ import (
 	"github.com/addreas/nixlr/packages/nixlr/pkg/apis/admin"
 	"github.com/addreas/nixlr/packages/nixlr/pkg/apis/node"
 	"github.com/addreas/nixlr/packages/nixlr/pkg/apis/pixiecore"
+	"github.com/addreas/nixlr/packages/nixlr/pkg/github"
 	"github.com/addreas/nixlr/packages/nixlr/pkg/noderegistry"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
@@ -23,6 +24,8 @@ var (
 	pxeKernelStorePath   = pflag.String("pxe-kernel", "/nix/store/...", "nixosSystem.config.system.build.kernel")
 	pxeToplevelStorePath = pflag.String("pxe-toplevel", "/nix/store/...", "nixosSystem.config.system.build.toplevel")
 	pxeInitrdStorePath   = pflag.String("pxe-initrd", "/nix/store/...", "nixosSystem.config.system.build.netbootRamdisk")
+
+	githubClientId = pflag.String("github-client-id", "asdfasdf", "github client id for deploy key upload functionality")
 )
 
 func main() {
@@ -33,6 +36,8 @@ func main() {
 		TopLevel: *pxeToplevelStorePath,
 		Initrd:   *pxeInitrdStorePath,
 	})
+
+	github.Login(githubClientId)
 
 	router := gin.New()
 	router.Use(gin.Logger())
