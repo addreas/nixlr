@@ -1,5 +1,9 @@
 package ir
 
+import (
+	"cuelang.org/go/cue/ast"
+)
+
 type File struct {
 	Name    string
 	Imports []Import
@@ -14,7 +18,7 @@ type Import struct {
 type TypeDecl struct {
 	Name  string
 	Value Type
-	Doc   string
+	Doc   []*ast.CommentGroup
 }
 
 type Type interface{ isType() }
@@ -61,5 +65,5 @@ type StructField struct {
 	Optional bool
 	Nullable bool
 	Value    Type
-	Doc      string
+	Doc      []*ast.CommentGroup
 }

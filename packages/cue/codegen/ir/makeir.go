@@ -23,45 +23,58 @@ func GetIR() []File {
 
 	files := []File{}
 	for _, val := range vals {
-		f := val.Source().(*ast.File)
-		fmt.Println(f.Filename)
-
-		imports := []Import{}
-		types := []TypeDecl{}
-
-		for _, decl := range f.Decls {
-			switch decl := decl.(type) {
-			case *ast.ImportDecl:
-				for _, imp := range decl.Specs {
-					imports = append(imports, Import{
-						Name: imp.Name.Name,
-						Path: imp.Path.Value,
-					})
-				}
-			case *ast.Field:
-				types = append(types, visitTopType(decl))
-			default:
-				fmt.Println(reflect.TypeOf(decl))
-			}
-		}
-
-		files = append(files, File{
-			Name:    f.Filename,
-			Imports: imports,
-			Types:   types,
-		})
+		files = append(files, visitFile(val))
 	}
 
 	return files
 }
 
+func visitFile(file cue.Value) File {
+	f := file.Source().(*ast.File)
+	fmt.Println(f.Filename)
+
+	imports := []Import{}
+	types := []TypeDecl{}
+
+	for _, decl := range f.Decls {
+		switch decl := decl.(type) {
+		case *ast.ImportDecl:
+			for _, imp := range decl.Specs {
+				name := ""
+				if imp.Name != nil {
+					name = imp.Name.Name
+				}
+				imports = append(imports, Import{
+					Name: name,
+					Path: imp.Path.Value,
+				})
+			}
+		case *ast.Field:
+			types = append(types, visitTopType(decl))
+		default:
+			fmt.Println(reflect.TypeOf(decl))
+		}
+	}
+
+	return File{
+		Name:    f.Filename,
+		Imports: imports,
+		Types:   types,
+	}
+}
+
 func visitTopType(field *ast.Field) TypeDecl {
 	fmt.Println("visitTopType", field)
 
+	t, _ := visitMaybeNullableType(field.Value)
+	doc := field.Comments()
+	if len(doc) == 0 {
+		doc = nil
+	}
 	return TypeDecl{
 		Name:  fmt.Sprint(field.Label),
-		Doc:   fmt.Sprint(field.Comments()),
-		Value: visitExpr(field.Value),
+		Doc:   doc,
+		Value: t,
 	}
 }
 
@@ -73,8 +86,34 @@ func visitExpr(expr ast.Expr) Type {
 			Embeds: embeds,
 			Fields: fields,
 		}
+	case *ast.Ident:
+		switch expr.String() {
+		case "int":
+			return &Int{}
+		case "float":
+			return &Float{}
+		case "bool":
+			return &Boolean{}
+		case "string":
+			return &String{}
+		default:
+			fmt.Printf("unknown ident: %#v\n", expr)
+			return nil
+		}
+	case *ast.ListLit:
+		tupleItems := []Type{}
+		for _, thing := range expr.Elts {
+			if ellipsis, ok := thing.(*ast.Ellipsis); ok {
+				return &List{
+					ElementType: visitExpr(ellipsis.Type),
+				}
+			} else {
+				tupleItems = append(tupleItems, visitExpr(thing))
+			}
+		}
+		return &Tuple{ElementTypes: tupleItems}
 	default:
-		fmt.Println("unknown expr", expr)
+		fmt.Printf("unknown expr: %#v\n", expr)
 		return nil
 	}
 }
@@ -89,10 +128,14 @@ func visitStruct(expr *ast.StructLit) ([]Type, []StructField) {
 			embeds = append(embeds, visitExpr(el.Expr))
 		case *ast.Field:
 			val, nullable := visitMaybeNullableType(el.Value)
+			doc := el.Comments()
+			if len(doc) == 0 {
+				doc = nil
+			}
 			fields = append(fields, StructField{
 				Name:     fmt.Sprint(el.Label),
 				Optional: el.Optional.IsValid(),
-				Doc:      fmt.Sprint(el.Comments()),
+				Doc:      doc,
 				Nullable: nullable,
 				Value:    val,
 			})
@@ -105,15 +148,17 @@ func visitStruct(expr *ast.StructLit) ([]Type, []StructField) {
 func visitMaybeNullableType(expr ast.Expr) (Type, bool) {
 	val := cuecontext.New().BuildExpr(expr)
 	if op, operands := val.Expr(); op == cue.OrOp {
+		var vals []cue.Value
 		if val.IncompleteKind().IsAnyOf(cue.NullKind) {
-			var vals []cue.Value
 			for _, o := range operands {
 				if o.Kind() != cue.NullKind {
 					vals = append(vals, o)
 				}
 			}
-			return visitUnion(val, vals), true
+		} else {
+			vals = operands
 		}
+		return visitUnion(val, vals), true
 	}
 	return visitExpr(expr), false
 }
@@ -122,7 +167,8 @@ func visitUnion(val cue.Value, vals []cue.Value) Type {
 	if val.IncompleteKind() == cue.StringKind {
 		strs := []string{}
 		for _, v := range vals {
-			strs = append(strs, fmt.Sprint(v))
+			str, _ := v.String()
+			strs = append(strs, str)
 		}
 		return &StringUnion{
 			Values: strs,

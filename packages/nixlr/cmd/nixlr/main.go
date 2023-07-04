@@ -37,7 +37,7 @@ func main() {
 		Initrd:   *pxeInitrdStorePath,
 	})
 
-	github.Login(githubClientId)
+	github.Login(*githubClientId)
 
 	router := gin.New()
 	router.Use(gin.Logger())
