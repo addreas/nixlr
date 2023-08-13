@@ -21,9 +21,7 @@ var (
 
 	pixiecoreApiPort = pflag.Int("pixiecore-api-port", 9814, "port for the pixiecore api responder")
 
-	pxeKernelStorePath   = pflag.String("pxe-kernel", "/nix/store/...", "nixosSystem.config.system.build.kernel")
-	pxeToplevelStorePath = pflag.String("pxe-toplevel", "/nix/store/...", "nixosSystem.config.system.build.toplevel")
-	pxeInitrdStorePath   = pflag.String("pxe-initrd", "/nix/store/...", "nixosSystem.config.system.build.netbootRamdisk")
+	defaultSystemFlake = pflag.String("default-system-flake", ".#nixosConfigurations.nixl-pxe-tmpfs", "a reference to a nixosConfiguration in a flake")
 
 	githubClientId = pflag.String("github-client-id", "asdfasdf", "github client id for deploy key upload functionality")
 )
@@ -31,11 +29,13 @@ var (
 func main() {
 	pflag.Parse()
 
-	registry := noderegistry.NewMemoryRegistry(noderegistry.NetbootNixStorePaths{
-		Kernel:   *pxeKernelStorePath,
-		TopLevel: *pxeToplevelStorePath,
-		Initrd:   *pxeInitrdStorePath,
-	})
+	defaultSystemPaths, err := noderegistry.BuildSystemFlake(*defaultSystemFlake)
+	if err != nil {
+		panic(err)
+	}
+
+	registry := noderegistry.NewMemoryRegistry(*defaultSystemPaths)
+	registry.AddNode("aa:aa:aa:aa:aa:aa", "test", ".#nixosConfigurations.test")
 
 	github.Login(*githubClientId)
 
@@ -57,6 +57,6 @@ func main() {
 
 	pixiecore.MountPaths(pixieRouter.Group("/"), fmt.Sprintf("https://%s:9813", *hostname), registry)
 
-	go pixieRouter.Run(fmt.Sprintf("localhost:%d", pixiecoreApiPort))
-	router.RunTLS(fmt.Sprintf("0.0.0.0:%d", nixlrApiPort), *certFile, *keyFile)
+	go pixieRouter.Run(fmt.Sprintf("localhost:%d", *pixiecoreApiPort))
+	router.RunTLS(fmt.Sprintf("0.0.0.0:%d", *nixlrApiPort), *certFile, *keyFile)
 }

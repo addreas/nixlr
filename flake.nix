@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.nixpkgs.url = "nixpkgs/nixos-23.05";
   inputs.pnpm2nix.url = "github:pupbrained/pnpm2nix";
   inputs.pnpm2nix.flake = false;
 
@@ -37,6 +37,10 @@
         {
           nixl-pxe-provision = just-a-machine "nixl-pxe-provision";
           nixl-pxe-tmpfs = just-a-machine "nixl-pxe-tmpfs";
+
+          test = nixpkgs.lib.nixosSystem { inherit system; modules = [
+            (nixpkgs + "/nixos/modules/installer/netboot/netboot-minimal.nix")
+          ]; };
           # test-node = just-a-machine "test-node";
         };
     };

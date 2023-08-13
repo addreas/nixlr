@@ -11,7 +11,7 @@ in
       hostname = lib.mkOption { type = lib.types.string; };
       certFile = lib.mkOption { type = lib.types.string; };
       keyFile = lib.mkOption { type = lib.types.string; };
-      defaultPxeSystem = lib.mkOption { type = lib.types.package; };
+      defaultSystemFlake = lib.mkOption { type = lib.types.string; };
 
       pixiecore-api-port = lib.mkOption {
         type = lib.types.int;
@@ -46,9 +46,7 @@ in
           "--cert=${cfg.certFile}"
           "--key=${cfg.keyFile}"
           "--pixiecore-api-port ${builtins.toString cfg.pixiecore-api-port}"
-          "--pxe-kernel=${cfg.defaultPxeSystem.config.system.build.kernel}"
-          "--pxe-toplevel=${cfg.defaultPxeSystem.config.system.build.toplevel}"
-          "--pxe-initrd=${cfg.defaultPxeSystem.config.system.build.netbootRamdisk}"
+          "--default-system-flake=${cfg.defaultSystemFlake}"
           "--github-client-id=${cfg.github-client-id}"
       ];
     };

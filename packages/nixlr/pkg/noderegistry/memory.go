@@ -4,10 +4,29 @@ import (
 	"fmt"
 )
 
-func NewMemoryRegistry(defaultNetbootStorePaths NetbootNixStorePaths) Registry {
+func NewMemoryRegistry(defaultNetbootStorePaths NetbootNixStorePaths) *memoryRegistry {
 	return &memoryRegistry{
-		defaultNetbootStorepaths: defaultNetbootStorePaths,
+		defaultNetbootStorePaths: defaultNetbootStorePaths,
 	}
+}
+
+func (r *memoryRegistry) AddNode(mac, name, systemFlakeRef string) error {
+	res, err := BuildSystemFlake(systemFlakeRef)
+	if err != nil {
+		return err
+	}
+
+	if node := r.getByMac(mac); node != nil {
+		node.name = name
+		node.netbootStorePaths = res
+	} else {
+		r.nodes = append(r.nodes, memoryNode{
+			mac:               mac,
+			name:              name,
+			netbootStorePaths: res,
+		})
+	}
+	return nil
 }
 
 type memoryNode struct {
@@ -26,7 +45,7 @@ type memoryNode struct {
 type memoryRegistry struct {
 	nodes []memoryNode
 
-	defaultNetbootStorepaths NetbootNixStorePaths
+	defaultNetbootStorePaths NetbootNixStorePaths
 
 	lockHolder *string
 }
@@ -56,8 +75,10 @@ func (r *memoryRegistry) ShouldBoot(mac string) bool {
 
 func (r *memoryRegistry) GetNetbootNixStorePaths(mac string) *NetbootNixStorePaths {
 	node := r.getByMac(mac)
-	if node == nil || node.netbootStorePaths == nil {
-		return &r.defaultNetbootStorepaths
+	if node == nil {
+		return nil
+	} else if node.netbootStorePaths == nil {
+		return &r.defaultNetbootStorePaths
 	} else {
 		return node.netbootStorePaths
 	}
