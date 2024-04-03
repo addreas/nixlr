@@ -1,7 +1,7 @@
 {
   disko.devices = {
     disk = {
-      vdb = {
+      boot = {
         type = "disk";
         # device = "/dev/disk/by-diskseq/1";
         device = "/dev/nvme3n1";
@@ -10,7 +10,6 @@
           partitions = {
             ESP = {
               priority = 1;
-              name = "ESP";
               start = "1M";
               end = "512M";
               type = "EF00";

@@ -1,10 +1,11 @@
-
 import { IpLink, IpRoute, IpRule } from "./iproute.ts";
 import { LsblkDev } from "./lsblk.ts";
-import {  LshwNode } from "./lshw.ts";
+import { LshwNode } from "./lshw.ts";
 
 export type DiscoveryInfo = {
   "hardware-configuration.nix": string;
+
+  hostname: string;
 
   lsblk: LsblkDev[];
   ip: {

@@ -2,7 +2,7 @@ import $, {
   CommandBuilder,
   build$,
 } from "https://deno.land/x/dax@0.30.1/mod.ts";
-import { ProvisionInfo } from "./types.ts";
+import { ProvisionInfo } from "~/types/provision.ts";
 
 export function sshKeygen(info: ProvisionInfo) {
   return [
@@ -13,10 +13,6 @@ export function sshKeygen(info: ProvisionInfo) {
   ];
 }
 
-export function generateConfig(_info: ProvisionInfo) {
-  return [$`nixos-generate-config --root /mnt --dir /etc/nixos-generated`];
-}
-
 export function cloneRepo(info: ProvisionInfo) {
   const $ = build$({
     commandBuilder: new CommandBuilder().env({
@@ -24,18 +20,4 @@ export function cloneRepo(info: ProvisionInfo) {
     }),
   });
   return [$`git clone ${info.flakeRepo} -o /mnt/etc/nixos`];
-}
-
-export function copyGeneratedToRepo(info: ProvisionInfo) {
-  const $ = build$({
-    commandBuilder: new CommandBuilder().cwd(
-      `/mnt/etc/nixos/${info.flakePath}`
-    ),
-  });
-  return [
-    $`cp /mnt/etc/nixos-generated/* ."`,
-    $`git add .`,
-    $`git commit -am "add generated config for ${info.hostname}`,
-    $`git push`,
-  ];
 }

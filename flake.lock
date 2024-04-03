@@ -1,40 +1,44 @@
 {
   "nodes": {
-    "nixpkgs": {
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1711893265,
-        "narHash": "sha256-TaABfNi4Lpjsl2omMJjqb/TzqNbf4HuchdqmpDQ3wA8=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "c4451cc34ff4ffd4627fcc27b5d5a5a445eb8057",
+        "lastModified": 1711934712,
+        "narHash": "sha256-sBDe+QmX/QohlnKeSEzrftcXyZL5FY09OMjZ59Rpyy4=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "611c9ea53250f7bb22286b3d26872280a0e608f9",
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
-        "ref": "nixos-23.05",
-        "type": "indirect"
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
       }
     },
-    "pnpm2nix": {
-      "flake": false,
+    "nixpkgs": {
       "locked": {
-        "lastModified": 1676829786,
-        "narHash": "sha256-ywnp/Y20Bv62Vs4v39NezJ4irSg6IJUR+J25hBMu+yA=",
-        "owner": "pupbrained",
-        "repo": "pnpm2nix",
-        "rev": "65e000773abd988f1f0cb99ff592d7945e7dd349",
+        "lastModified": 1712172339,
+        "narHash": "sha256-s4Mg7IePSR6jImmiqABZ84j+d2fyaxy9VSQjfNDsIqM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "b3f4462bb4d1d60505d0dffd9e0da494facdb77f",
         "type": "github"
       },
       "original": {
-        "owner": "pupbrained",
-        "repo": "pnpm2nix",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "pnpm2nix": "pnpm2nix"
+        "disko": "disko",
+        "nixpkgs": "nixpkgs"
       }
     }
   },

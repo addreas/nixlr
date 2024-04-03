@@ -3,9 +3,9 @@ import { setDiscoveryInfo } from "~/lib/db.ts";
 
 export const handler: Handlers = {
   async PUT(req, ctx) {
-    const data = await req.json()
+    const data = await req.json();
     // TODO: validate data :)
-    await setDiscoveryInfo(ctx.params.mac, data)
+    await setDiscoveryInfo(ctx.params.hostname, data);
     return Response.json(data);
   },
 };

@@ -83,7 +83,9 @@ export default async function Home(_req: Request, _ctx: FreshContext) {
           <Card heading="Discovery Info">
             <ul>
               {discoveryInfo.map((info) => (
-                <li>{info.mac}</li>
+                <li>
+                  <pre>{JSON.stringify(info, null, 2)}</pre>
+                </li>
               ))}
             </ul>
           </Card>
@@ -92,7 +94,7 @@ export default async function Home(_req: Request, _ctx: FreshContext) {
             <ul>
               {provisionInfo.map((info) => (
                 <li>
-                  {info.mac} - {info.name}
+                  <pre>{JSON.stringify(info, null, 2)}</pre>
                 </li>
               ))}
             </ul>
@@ -101,7 +103,9 @@ export default async function Home(_req: Request, _ctx: FreshContext) {
           <Card heading="Provision Status">
             <ul>
               {provisionStatus.map((info) => (
-                <li>{info.name}</li>
+                <li>
+                  <pre>{JSON.stringify(info, null, 2)}</pre>
+                </li>
               ))}
             </ul>
           </Card>
