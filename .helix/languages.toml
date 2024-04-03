@@ -1,9 +1,43 @@
+[language-server.deno-lsp]
+command = "deno"
+args = ["lsp", "--unstable"]
+
+[language-server.deno-lsp.config.deno]
+enable = true
+unstable = true
+lint = true
+suggest.imports.hosts = { "https://deno.land" = true }
+inlayHints.parameterNames.enabled = "all"
+inlayHints.parameterTypes.enabled = true
+inlayHints.variableTypes.enabled = true
+inlayHints.propertyDeclarationTypes.enabled = true
+inlayHints.functionLikeReturnTypes.enabled = true
+inlayHints.enumMemberValues.enabled = true
+
 [[language]]
 name = "typescript"
+language-id = "typescript"
+scope = "source.ts"
+injection-regex = "^(ts|typescript)$"
+file-types = ["ts"]
+shebangs = ["deno", "node"]
+roots = ["deno.json", "deno.jsonc", "package.json", "tsconfig.json"]
+comment-token = "//"
+language-servers = ["deno-lsp"]
+grammar = "typescript"
+indent = { tab-width = 2, unit = "  " }
+auto-format = true
 
-[language.config]
-enable = true
-
-[language.language-server]
-args = ["lsp"]
-command = "deno"
+[[language]]
+name = "tsx"
+language-id = "typescriptreact"
+scope = "source.tsx"
+injection-regex = "^(tsx)$"
+file-types = ["tsx"]
+shebangs = ["deno", "node"]
+roots = ["deno.json", "deno.jsonc", "package.json", "tsconfig.json"]
+comment-token = "//"
+language-servers = ["deno-lsp"]
+grammar = "typescript"
+indent = { tab-width = 2, unit = "  " }
+auto-format = true

@@ -4,6 +4,7 @@
     (modulesPath + "/profiles/minimal.nix")
 
     ./hardware-config.nix
+    ./disko-config.nix
 
     ../../packages/nixl-maintain/module.nix
   ];

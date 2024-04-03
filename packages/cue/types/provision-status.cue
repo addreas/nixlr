@@ -1,5 +1,0 @@
-package types
-
-#ProvisionStatus: {}
-
-#ProvisionEvent: {}
