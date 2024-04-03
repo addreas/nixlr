@@ -4,11 +4,13 @@
 export function getNixPixiecoreParams(
   kernel: string,
   initrd: string,
-  toplevel: string
+  toplevel: string,
+  api: string,
+  hostname: string
 ) {
   return {
     kernel: `file:///${kernel}/bzImage`,
     initrd: [`file:///${initrd}/initrd`],
-    cmdline: [`init=${toplevel}/init`],
+    cmdline: [`init=${toplevel}/init`, `api=${api}`, `hostname=${hostname}`],
   };
 }

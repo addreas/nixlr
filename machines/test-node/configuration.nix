@@ -5,8 +5,6 @@
 
     ./hardware-config.nix
     ./disko-config.nix
-
-    ../../packages/nixl-maintain/module.nix
   ];
 
   system.stateVersion = "22.11";

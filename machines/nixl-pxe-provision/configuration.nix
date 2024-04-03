@@ -4,8 +4,6 @@
     (modulesPath + "/installer/netboot/netboot-minimal.nix")
     (modulesPath + "/profiles/headless.nix")
     (modulesPath + "/profiles/minimal.nix")
-
-    ../../packages/nixl-provision/module.nix
   ];
 
   system.stateVersion = "22.11";

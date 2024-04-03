@@ -8,12 +8,12 @@ import type {
 
 const kv = await Deno.openKv();
 
-export async function setDiscoveryInfo(mac: string, info: DiscoveryInfo) {
-  await kv.set(["discovery", mac], info);
+export async function setDiscoveryInfo(name: string, info: DiscoveryInfo) {
+  await kv.set(["discovery", name], info);
 }
 
-export function getDiscoveryInfo(mac: string) {
-  return getKvItem<DiscoveryInfo>(["discovery", mac]);
+export function getDiscoveryInfo(name: string) {
+  return getKvItem<DiscoveryInfo>(["discovery", name]);
 }
 
 export function listDiscoveryInfo() {
