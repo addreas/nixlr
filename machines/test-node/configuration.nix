@@ -10,6 +10,9 @@
   system.stateVersion = "22.11";
   networking.hostName = "test-node";
 
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
+
   services.nixl-self-deploy.enabled = true;
   services.nixl-self-deploy.settings = {
     repo = "git@github.com:addreas/nixlr.git";

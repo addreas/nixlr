@@ -8,5 +8,5 @@
 
   system.stateVersion = "22.11";
 
-  services.nixl-provision.enabled = true;
+  # services.nixl-provision.enabled = true;
 }

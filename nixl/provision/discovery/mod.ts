@@ -21,7 +21,7 @@ export async function discovery(hostname: string): Promise<DiscoveryInfo> {
       route: await $`ip --json route show`.json(),
     },
     lshw: convertLshwXmlOutput(await $`lshw -xml`.text()), // lshw
-    cpuinfo: await $`cat /proc/cpuinfo`.text(),
+    lscpu: await $`scpu --json --hierarchic=always`.json().then((r) => r.lscpu), // util-linux
     // lspci: await $`lspci`.text(), // pciutils
     // lsusb: await $`lsusb`.text(), // usbutils
     // dmidecode: await $`dmidecode`.text(), // dmidecode

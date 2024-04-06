@@ -8,18 +8,6 @@ import type {
 
 const kv = await Deno.openKv();
 
-export async function setDiscoveryInfo(name: string, info: DiscoveryInfo) {
-  await kv.set(["discovery", name], info);
-}
-
-export function getDiscoveryInfo(name: string) {
-  return getKvItem<DiscoveryInfo>(["discovery", name]);
-}
-
-export function listDiscoveryInfo() {
-  return listKvItems<DiscoveryInfo>(["discovery"]);
-}
-
 export async function setPixiecoreParams(mac: string, params: PixiecoreParams) {
   await kv.set(["pixiecore", "params", mac], params);
 }
@@ -45,6 +33,26 @@ export async function listPixiecoreBootAttempts() {
   return entries.map(
     ([key, value]) => [key[2] as string, value as bigint] as const
   );
+}
+
+export async function setHostMac(name: string, mac: string) {
+  await kv.set(["mac", name], mac);
+}
+
+export function getHostMac(name: string) {
+  return getKvItem<string>(["mac", name]);
+}
+
+export async function setDiscoveryInfo(name: string, info: DiscoveryInfo) {
+  await kv.set(["discovery", name], info);
+}
+
+export function getDiscoveryInfo(name: string) {
+  return getKvItem<DiscoveryInfo>(["discovery", name]);
+}
+
+export function listDiscoveryInfo() {
+  return listKvItems<DiscoveryInfo>(["discovery"]);
 }
 
 export async function setProvisionInfo(name: string, info: ProvisionInfo) {
@@ -92,7 +100,7 @@ export async function listProvisionStatus() {
   const res: ProvisionStatus[] = [];
   for await (const entry of entries) {
     const status = entry.value as ProvisionStatus;
-    const events = await listProvisionStatusEvent(status.name);
+    const events = await listProvisionStatusEvent(status.hostname);
     res.push({
       ...status,
       events,

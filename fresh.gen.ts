@@ -4,14 +4,16 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
-import * as $api_nixlr_v1_discovery_mac_ from "./routes/api/nixlr/v1/discovery/[mac].ts";
-import * as $api_nixlr_v1_discovery_index from "./routes/api/nixlr/v1/discovery/index.ts";
+import * as $api_nixlr_v1_discovery_allow from "./routes/api/nixlr/v1/discovery/allow.ts";
+import * as $api_nixlr_v1_discovery_disallow from "./routes/api/nixlr/v1/discovery/disallow.ts";
+import * as $api_nixlr_v1_discovery_list from "./routes/api/nixlr/v1/discovery/list.ts";
+import * as $api_nixlr_v1_discovery_update from "./routes/api/nixlr/v1/discovery/update.ts";
+import * as $api_nixlr_v1_events_hostname_ from "./routes/api/nixlr/v1/events/[hostname].ts";
+import * as $api_nixlr_v1_events_index from "./routes/api/nixlr/v1/events/index.ts";
 import * as $api_nixlr_v1_maintainance_lock_name_ from "./routes/api/nixlr/v1/maintainance/lock/[name].ts";
 import * as $api_nixlr_v1_maintainance_secret_name_ from "./routes/api/nixlr/v1/maintainance/secret/[name].ts";
-import * as $api_nixlr_v1_provision_info_name_ from "./routes/api/nixlr/v1/provision/info/[name].ts";
-import * as $api_nixlr_v1_provision_info_index from "./routes/api/nixlr/v1/provision/info/index.ts";
-import * as $api_nixlr_v1_provision_status_name_ from "./routes/api/nixlr/v1/provision/status/[name].ts";
-import * as $api_nixlr_v1_provision_status_index from "./routes/api/nixlr/v1/provision/status/index.ts";
+import * as $api_nixlr_v1_provision_hostname_ from "./routes/api/nixlr/v1/provision/[hostname].ts";
+import * as $api_nixlr_v1_provision_index from "./routes/api/nixlr/v1/provision/index.ts";
 import * as $api_pixiecore_v1_boot_mac_ from "./routes/api/pixiecore/v1/boot/[mac].ts";
 import * as $index from "./routes/index.tsx";
 
@@ -21,20 +23,21 @@ const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
-    "./routes/api/nixlr/v1/discovery/[mac].ts": $api_nixlr_v1_discovery_mac_,
-    "./routes/api/nixlr/v1/discovery/index.ts": $api_nixlr_v1_discovery_index,
+    "./routes/api/nixlr/v1/discovery/allow.ts": $api_nixlr_v1_discovery_allow,
+    "./routes/api/nixlr/v1/discovery/disallow.ts":
+      $api_nixlr_v1_discovery_disallow,
+    "./routes/api/nixlr/v1/discovery/list.ts": $api_nixlr_v1_discovery_list,
+    "./routes/api/nixlr/v1/discovery/update.ts": $api_nixlr_v1_discovery_update,
+    "./routes/api/nixlr/v1/events/[hostname].ts":
+      $api_nixlr_v1_events_hostname_,
+    "./routes/api/nixlr/v1/events/index.ts": $api_nixlr_v1_events_index,
     "./routes/api/nixlr/v1/maintainance/lock/[name].ts":
       $api_nixlr_v1_maintainance_lock_name_,
     "./routes/api/nixlr/v1/maintainance/secret/[name].ts":
       $api_nixlr_v1_maintainance_secret_name_,
-    "./routes/api/nixlr/v1/provision/info/[name].ts":
-      $api_nixlr_v1_provision_info_name_,
-    "./routes/api/nixlr/v1/provision/info/index.ts":
-      $api_nixlr_v1_provision_info_index,
-    "./routes/api/nixlr/v1/provision/status/[name].ts":
-      $api_nixlr_v1_provision_status_name_,
-    "./routes/api/nixlr/v1/provision/status/index.ts":
-      $api_nixlr_v1_provision_status_index,
+    "./routes/api/nixlr/v1/provision/[hostname].ts":
+      $api_nixlr_v1_provision_hostname_,
+    "./routes/api/nixlr/v1/provision/index.ts": $api_nixlr_v1_provision_index,
     "./routes/api/pixiecore/v1/boot/[mac].ts": $api_pixiecore_v1_boot_mac_,
     "./routes/index.tsx": $index,
   },

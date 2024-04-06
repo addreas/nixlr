@@ -24,9 +24,9 @@
             inherit system;
             specialArgs = { flakePkgs = self.packages.${system}; };
             modules = [
+              disko.nixosModules.disko
               "${self}/machines/${name}/configuration.nix"
               "${self}/nixl/module.nix"
-              disko.nixosModules.disko
             ];
           };
         in

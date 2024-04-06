@@ -1,5 +1,4 @@
-import { FreshContext, Handlers } from "$fresh/server.ts";
-import { ComponentProps, ComponentChild } from "preact";
+import { FreshContext } from "$fresh/server.ts";
 
 import {
   listPixiecoreBootAttempts,
@@ -7,37 +6,12 @@ import {
   listDiscoveryInfo,
   listProvisionInfo,
   listProvisionStatus,
-  setPixiecoreParams,
-  deletePixiecoreParams,
 } from "~/lib/db.ts";
 
+import { getName } from "~/lib/name-generator.ts";
+
 import { Button } from "~/components/Button.tsx";
-
-const actions = {
-  async allow(mac: string) {
-    await setPixiecoreParams(mac, {
-      kernel: "something",
-      cmdline: [],
-      initrd: [],
-    });
-  },
-  async disallow(mac: string) {
-    await deletePixiecoreParams(mac);
-  },
-};
-
-export const handler: Handlers = {
-  async POST(req, _ctx) {
-    const data = await req.formData();
-    req.headers.get("Content-Type") === "application/x-www-form-urlencoded";
-
-    for (const [action, value] of data.entries()) {
-      await actions[action as keyof typeof actions](value.toString());
-    }
-
-    return Response.redirect(req.url);
-  },
-};
+import { Card } from "~/components/Card.tsx";
 
 export default async function Home(_req: Request, _ctx: FreshContext) {
   const bootAttempts = await listPixiecoreBootAttempts();
@@ -47,83 +21,75 @@ export default async function Home(_req: Request, _ctx: FreshContext) {
   const provisionStatus = await listProvisionStatus();
 
   return (
-    <form method="POST">
-      <div class="px-4 py-8 mx-auto">
-        <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center">
-          <Card heading="Boot attempts">
-            <ul>
-              {bootAttempts.map(([mac, attempts]) => (
+    <div class="px-4 py-8 mx-auto">
+      <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center">
+        <Card heading="Boot attempts">
+          <ul>
+            {bootAttempts.map(([mac, attempts]) => (
+              <form action="/api/nixlr/v1/discovery/allow" method="POST">
                 <li class="flex justify-between">
                   <span>
                     {mac}: {attempts.toString()}
                   </span>
-                  <Button name="allow" value={mac}>
-                    Allow
-                  </Button>
+                  <input type="hidden" name="mac" value={mac} />
+                  <input
+                    type="text"
+                    name="hostname"
+                    placeholder="hostname"
+                    defaultValue={getName()}
+                  />
+                  <Button>Allow</Button>
                 </li>
-              ))}
-            </ul>
-          </Card>
+              </form>
+            ))}
+          </ul>
+        </Card>
 
-          <Card heading="Boot params">
-            <ul>
-              {bootParams.map(([mac, params]) => (
-                <li class="flex justify-between">
-                  <div>
-                    {mac}: <pre>{JSON.stringify(params, null, 2)}</pre>
-                  </div>
-                  <Button name="disallow" value={mac}>
-                    Disallow
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </Card>
+        <Card heading="Boot params">
+          <ul>
+            {bootParams.map(([mac, params]) => (
+              <li class="flex justify-between">
+                <div>
+                  {mac}: <pre>{JSON.stringify(params, null, 2)}</pre>
+                </div>
+                <Button name="disallow" value={mac}>
+                  Disallow
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
 
-          <Card heading="Discovery Info">
-            <ul>
-              {discoveryInfo.map((info) => (
-                <li>
-                  <pre>{JSON.stringify(info, null, 2)}</pre>
-                </li>
-              ))}
-            </ul>
-          </Card>
+        <Card heading="Discovery Info">
+          <ul>
+            {discoveryInfo.map((info) => (
+              <li>
+                <pre>{JSON.stringify(info, null, 2)}</pre>
+              </li>
+            ))}
+          </ul>
+        </Card>
 
-          <Card heading="Provision Info">
-            <ul>
-              {provisionInfo.map((info) => (
-                <li>
-                  <pre>{JSON.stringify(info, null, 2)}</pre>
-                </li>
-              ))}
-            </ul>
-          </Card>
+        <Card heading="Provision Info">
+          <ul>
+            {provisionInfo.map((info) => (
+              <li>
+                <pre>{JSON.stringify(info, null, 2)}</pre>
+              </li>
+            ))}
+          </ul>
+        </Card>
 
-          <Card heading="Provision Status">
-            <ul>
-              {provisionStatus.map((info) => (
-                <li>
-                  <pre>{JSON.stringify(info, null, 2)}</pre>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </div>
+        <Card heading="Provision Status">
+          <ul>
+            {provisionStatus.map((info) => (
+              <li>
+                <pre>{JSON.stringify(info, null, 2)}</pre>
+              </li>
+            ))}
+          </ul>
+        </Card>
       </div>
-    </form>
-  );
-}
-
-function Card({
-  children,
-  heading,
-  ...rest
-}: { heading: ComponentChild } & ComponentProps<"div">) {
-  return (
-    <div {...rest} class="p-4 border-solid shadow-md w-full">
-      <h2 class="mb-2 text-xl border-b-2 w-full">{heading}</h2>
-      {children}
     </div>
   );
 }
