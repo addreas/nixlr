@@ -1,12 +1,16 @@
-import type { DiscoveryInfo } from "~/types/discovery.ts";
-import type { PixiecoreParams } from "~/types/pixiecore.ts";
+import type { DiscoveryInfo } from "../nixl/types/discovery.ts";
 import type {
   ProvisionInfo,
   ProvisionStatus,
   ProvisionEvent,
-} from "../types/provision.ts";
+} from "../nixl/types/provision.ts";
 
 const kv = await Deno.openKv();
+export type PixiecoreParams = {
+  kernel: string;
+  initrd: string[];
+  cmdline: string[];
+};
 
 export async function setPixiecoreParams(mac: string, params: PixiecoreParams) {
   await kv.set(["pixiecore", "params", mac], params);

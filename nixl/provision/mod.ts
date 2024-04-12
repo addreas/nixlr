@@ -1,66 +1,36 @@
-import $, { CommandBuilder } from "https://deno.land/x/dax@0.30.1/mod.ts";
+import $ from "https://deno.land/x/dax@0.30.1/mod.ts";
 
-import { ProvisionInfo } from "~/types/provision.ts";
-
-import { cloneRepo, sshKeygen } from "./flakesetup.ts";
-import { discovery } from "~/nixl/provision/discovery/mod.ts";
+import { ProvisionInfo } from "../types/provision.ts";
+import { discovery } from "./discovery.ts";
 
 export async function provision(api: string, hostname: string) {
-  await sendDiscovery(api, hostname);
-
-  const info: ProvisionInfo = await getProvisionInfo(api, hostname);
-
-  await run("ssh-keygen", sshKeygen, info);
-  // TODO: generate ssh ekys in tmp or whatever instead of /mnt that doesnt exist yet
-
-  //  TODO: await deploy key approval
-
-  await run("git-clone", cloneRepo, info);
-
-  await run("disko-script", disko, info);
-  await run("nixos-install", install, info);
-
-  //TODO: move ssh keys to finished ssytem
+  await sendDiscovery(api, hostname)
+    .then(() => getProvisionInfo(api, hostname))
+    .then((info) => runInstallScript(api, hostname, info))
+    .catch((error) => sendEvent(api, hostname, "provision", { error }));
 
   await $`reboot`;
 }
 
-function disko(info: ProvisionInfo) {
-  return [
-    $`nix run /mnt/etx/nixos#nixosConfigurations.${info.hostname}.config.system.build.diskoScript`,
-  ];
-}
-
-function install(info: ProvisionInfo) {
-  return [
-    $`
-    nixos-install
-      --root /mnt \
-      --no-root-password \
-      --option extra-experimental-features auto-allocate-uids \
-      --option extra-experimental-features cgroups \
-      --flake /mnt/etx/nixos#${info.hostname}`,
-  ];
-}
-
-async function run(
-  phase: string,
-  steps: (info: ProvisionInfo) => CommandBuilder[],
+async function runInstallScript(
+  api: string,
+  hostname: string,
   info: ProvisionInfo
 ) {
-  for (const command of steps(info)) {
-    const output = await command.noThrow(true);
+  const { code, stdout, stderr } = await $`${info.installScript}`
+    .env({
+      GIT_SSH_COMMAND: `ssh -i /tmp/id_ed25519`,
+      HOSTNAME: info.hostname,
+      NIXLR_API: info.api,
+    })
+    .noThrow(true)
+    .captureCombined(true);
 
-    await sendEvent(info.api, info.hostname, phase, {
-      phase,
-      command,
-      ...output,
-    });
+  await sendEvent(api, hostname, "install-script", { code, stdout, stderr });
 
-    if (output.code !== 0) {
-      throw new Error(`failed ${phase}`);
-    }
-  }
+  await Deno.mkdir("/mnt/root/.ssh");
+  await Deno.copyFile("/tmp/id_ed25519", "/mnt/rooot/.ssh/id_ed25519");
+  await Deno.copyFile("/tmp/id_ed25519.pub", "/mnt/rooot/.ssh/id_ed25519.pub");
 }
 
 async function sendDiscovery(api: string, hostname: string) {

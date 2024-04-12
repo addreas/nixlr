@@ -4,51 +4,34 @@ let
 in
 {
   options.services.nixl = {
-    enabled = lib.mkEnableOption "nixl";
+    enabled = lib.mkEnableOption "nixl node daemon";
     package = lib.mkOption {
       type = lib.types.package;
       default = flakePkgs.nixl;
     };
-  };
-
-  options.services.nixl.provision = {
-    enabled = lib.mkEnableOption "nixl provision daemon";
     mode = lib.mkOption {
-      type = lib.types.enum [ "ephemeral" "firstboot" ];
+      type = lib.types.enum [ "provision" "maintain" ];
     };
   };
 
-  options.services.nixl.maintain = {
-    enabled = lib.mkEnableOption "nixl maintain daemon";
-  };
-
   options.services.nixl.self-deploy = {
-    enabled = lib.mkEnableOption "nixl self deploy";
+    enabled = lib.mkEnableOption "nixl node self deploy";
     settings.repo = lib.mkOption { type = lib.types.string; };
     settings.timer = lib.mkOption { type = lib.types.string; };
   };
 
   config = lib.mkIf cfg.enabled {
     services.lldpd.enable = true;
-    services.avahi.enable = true;
 
-    systemd.services.nixl-provision = lib.mkIf cfg.provision.enabled {
-      description = "Run the nixl-provision daemon";
+    systemd.services.nixl = {
+      description = "Run the nixl node daemon";
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        # ExecStart = "${cfg.package}/bin/nixl-provision --mode=${cfg.mode}";
+        Environment = "PATH=${lib.makeBinPath (with pkgs; [ util-linux iproute2 lshw pciutils usbutils dmidecode efibootmgr lldpd ])}";
+        ExecStart = "${cfg.package}/bin/nixl --mode=${cfg.mode}";
         StandardOutput = "journal+console";
         Restart = "always";
         RestartSec = "5min";
-      };
-    };
-
-    systemd.services.nixl-maintain = lib.mkIf cfg.maintain.enabled {
-      description = "Run the nixl-maintain daemon";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        # ExecStart = "${cfg.package}/bin/nixl-maintain";
-        StandardOutput = "journal+console";
       };
     };
 

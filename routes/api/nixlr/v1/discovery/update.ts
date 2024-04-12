@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { setDiscoveryInfo } from "~/lib/db.ts";
-import { DiscoveryInfo } from "~/types/discovery.ts";
+import { DiscoveryInfo } from "~/nixl/types/discovery.ts";
 
 export const handler: Handlers = {
   async PUT(req, _ctx) {

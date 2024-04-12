@@ -1,7 +1,7 @@
 import { parse } from "https://deno.land/x/xml@2.1.0/mod.ts";
 import { node } from "https://deno.land/x/xml@2.1.0/utils/types.ts";
 
-import type { LshwNode } from "../../../types/lshw.ts";
+import type { LshwNode } from "../types/lshw.ts";
 
 export function convertLshwXmlOutput(xml: string): LshwNode {
   const parsed = (parse(xml).list as node).node as lshwnode;

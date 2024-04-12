@@ -7,6 +7,7 @@ export type DiscoveryInfo = {
   "hardware-configuration.nix": string;
 
   hostname: string;
+  deployKey: string;
 
   lsblk: LsblkDev[];
   ip: {

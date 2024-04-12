@@ -14,8 +14,7 @@
         in
         {
           cmdline = callPackage ./nixl/cmdline { inherit mkDenoPackage; };
-
-          nixl = callPackage ./nixlr/nixl { };
+          nixl = callPackage ./nixl { inherit mkDenoPackage; };
         };
 
       nixosConfigurations =
