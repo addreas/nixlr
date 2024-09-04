@@ -13,9 +13,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 5;
 
-  services.nixl-self-deploy.enabled = true;
-  services.nixl-self-deploy.settings = {
-    repo = "git@github.com:addreas/nixlr.git";
-    timer = "daily"; # TODO: implement self-deploy timer in ../../packages/nixl-maintain/module.nix
-  };
+  # services.nixl-self-deploy.enabled = true;
+  # services.nixl-self-deploy.settings = {
+  #   repo = "git@github.com:addreas/nixlr.git";
+  #   timer = "daily"; # TODO: implement self-deploy timer in ../../packages/nixl-maintain/module.nix
+  # };
 }
